@@ -6,7 +6,11 @@ if (!process.env.MONGODB_URI) {
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.DB_NAME || 'personal_finance';
-const options = {};
+const options = {
+  serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+  socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+  maxPoolSize: 10, // Maintain up to 10 socket connections
+};
 
 let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
@@ -34,6 +38,20 @@ if (process.env.NODE_ENV === 'development') {
 export default clientPromise;
 
 export async function getDatabase(): Promise<Db> {
-  const client = await clientPromise;
-  return client.db(dbName);
+  try {
+    console.log('Attempting to connect to MongoDB...');
+    const client = await clientPromise;
+    console.log('MongoDB client connected successfully');
+    const db = client.db(dbName);
+    console.log('Database selected:', dbName);
+    return db;
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+    console.error('Connection details:', {
+      uri: process.env.MONGODB_URI ? 'Set' : 'Not set',
+      dbName: dbName,
+      nodeEnv: process.env.NODE_ENV
+    });
+    throw error;
+  }
 }

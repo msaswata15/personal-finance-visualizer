@@ -3,12 +3,20 @@ import { db } from '@/lib/database';
 
 export async function GET() {
   try {
+    console.log('Attempting to fetch categories...');
     const categories = await db.categories.findAll();
+    console.log('Categories fetched successfully:', categories.length);
     return NextResponse.json(categories);
   } catch (error) {
     console.error('Error fetching categories:', error);
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+      mongoUri: process.env.MONGODB_URI ? 'Set' : 'Not set',
+      dbName: process.env.DB_NAME || 'personal_finance'
+    });
     return NextResponse.json(
-      { error: 'Failed to fetch categories' },
+      { error: 'Failed to fetch categories', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
