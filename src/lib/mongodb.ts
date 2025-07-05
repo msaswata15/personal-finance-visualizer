@@ -18,25 +18,18 @@ const options = {
 };
 
 let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
 
-if (process.env.NODE_ENV === 'development') {
-  // In development mode, use a global variable so that the value
-  // is preserved across module reloads caused by HMR (Hot Module Replacement).
-  const globalWithMongo = global as typeof globalThis & {
-    _mongoClientPromise?: Promise<MongoClient>;
-  };
+// Use global variable to persist connection across function calls
+const globalWithMongo = global as typeof globalThis & {
+  _mongoClientPromise?: Promise<MongoClient>;
+};
 
-  if (!globalWithMongo._mongoClientPromise) {
-    client = new MongoClient(uri, options);
-    globalWithMongo._mongoClientPromise = client.connect();
-  }
-  clientPromise = globalWithMongo._mongoClientPromise;
-} else {
-  // In production mode, it's best to not use a global variable.
+if (!globalWithMongo._mongoClientPromise) {
   client = new MongoClient(uri, options);
-  clientPromise = client.connect();
+  globalWithMongo._mongoClientPromise = client.connect();
 }
+
+const clientPromise = globalWithMongo._mongoClientPromise;
 
 // Export a module-scoped MongoClient promise. By doing this in a
 // separate module, the client can be shared across functions.
@@ -49,7 +42,13 @@ export async function getDatabase(): Promise<Db> {
     console.log('MongoDB URI exists:', !!process.env.MONGODB_URI);
     console.log('DB Name:', dbName);
     
-    const client = await clientPromise;
+    const client = await Promise.race([
+      clientPromise,
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('MongoDB connection timeout')), 15000)
+      )
+    ]) as MongoClient;
+    
     console.log('MongoDB client connected successfully');
     
     const db = client.db(dbName);
@@ -67,10 +66,17 @@ export async function getDatabase(): Promise<Db> {
       uriLength: process.env.MONGODB_URI?.length || 0,
       dbName: dbName,
       nodeEnv: process.env.NODE_ENV,
+      vercelEnv: process.env.VERCEL_ENV,
       error: error instanceof Error ? error.message : 'Unknown error',
       errorName: error instanceof Error ? error.name : 'Unknown',
       errorStack: error instanceof Error ? error.stack : 'No stack'
     });
+    
+    // Reset the client promise for next attempt
+    if (globalWithMongo._mongoClientPromise) {
+      globalWithMongo._mongoClientPromise = undefined;
+    }
+    
     throw error;
   }
 }

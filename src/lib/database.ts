@@ -88,15 +88,26 @@ function dbBudgetToApp(doc: WithId<BudgetDoc>): Budget {
 
 // Initialize categories if they don't exist
 export async function initializeCategories(): Promise<void> {
-  const categoriesCollection = await getCategoriesCollection();
-  const existingCategoriesCount = await categoriesCollection.countDocuments();
-  
-  if (existingCategoriesCount === 0) {
-    await categoriesCollection.insertMany(PREDEFINED_CATEGORIES.map(cat => ({
-      name: cat.name,
-      color: cat.color,
-      budget: cat.budget,
-    })));
+  try {
+    console.log('Initializing categories...');
+    const categoriesCollection = await getCategoriesCollection();
+    const existingCategoriesCount = await categoriesCollection.countDocuments();
+    console.log('Existing categories count:', existingCategoriesCount);
+    
+    if (existingCategoriesCount === 0) {
+      console.log('No categories found, inserting predefined categories...');
+      await categoriesCollection.insertMany(PREDEFINED_CATEGORIES.map(cat => ({
+        name: cat.name,
+        color: cat.color,
+        budget: cat.budget,
+      })));
+      console.log('Predefined categories inserted successfully');
+    } else {
+      console.log('Categories already exist, skipping initialization');
+    }
+  } catch (error) {
+    console.error('Error initializing categories:', error);
+    throw error;
   }
 }
 
@@ -158,12 +169,18 @@ export const db = {
 
   categories: {
     async findAll(): Promise<Category[]> {
-      // Initialize categories if needed
-      await initializeCategories();
-      
-      const collection = await getCategoriesCollection();
-      const categories = await collection.find({}).toArray();
-      return categories.map(dbCategoryToApp);
+      try {
+        // Initialize categories if needed
+        await initializeCategories();
+        
+        const collection = await getCategoriesCollection();
+        const categories = await collection.find({}).toArray();
+        console.log('Categories from MongoDB:', categories.length);
+        return categories.map(dbCategoryToApp);
+      } catch (error) {
+        console.error('Error in categories.findAll:', error);
+        throw error;
+      }
     },
 
     async create(category: Omit<Category, '_id'>): Promise<Category> {
