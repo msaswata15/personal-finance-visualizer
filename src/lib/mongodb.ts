@@ -7,6 +7,11 @@ if (!process.env.MONGODB_URI) {
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.DB_NAME || 'personal_finance';
 
+// Add the database name to the URI if it's not already there
+const uriWithDb = uri.includes('mongodb.net/') && !uri.includes('mongodb.net/' + dbName) 
+  ? uri.replace('mongodb.net/', `mongodb.net/${dbName}`)
+  : uri;
+
 // Use simpler connection options for better compatibility
 const options = {
   maxPoolSize: 10,
@@ -26,13 +31,13 @@ if (process.env.NODE_ENV === 'development') {
   };
 
   if (!globalWithMongo._mongoClientPromise) {
-    client = new MongoClient(uri, options);
+    client = new MongoClient(uriWithDb, options);
     globalWithMongo._mongoClientPromise = client.connect();
   }
   clientPromise = globalWithMongo._mongoClientPromise;
 } else {
   // In production mode, it's best to not use a global variable.
-  client = new MongoClient(uri, options);
+  client = new MongoClient(uriWithDb, options);
   clientPromise = client.connect();
 }
 

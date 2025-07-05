@@ -8,10 +8,12 @@ export async function GET() {
     // Check environment variables
     const hasMongoUri = !!process.env.MONGODB_URI;
     const hasDbName = !!process.env.DB_NAME;
+    const mongoUriStart = process.env.MONGODB_URI?.substring(0, 20) || 'Not set';
     
     console.log('Environment check:', {
       hasMongoUri,
       hasDbName,
+      mongoUriStart: mongoUriStart + '...',
       dbName: process.env.DB_NAME || 'personal_finance',
       nodeEnv: process.env.NODE_ENV
     });
@@ -23,8 +25,14 @@ export async function GET() {
       );
     }
     
-    // Test database connection
-    const db = await getDatabase();
+    // Test database connection with timeout
+    console.log('Attempting database connection...');
+    const dbPromise = getDatabase();
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Connection timeout after 10 seconds')), 10000)
+    );
+    
+    const db = await Promise.race([dbPromise, timeoutPromise]) as Awaited<ReturnType<typeof getDatabase>>;
     console.log('Database connection successful');
     
     // Test a simple operation
@@ -35,7 +43,13 @@ export async function GET() {
       success: true,
       message: 'MongoDB connection successful',
       collectionsCount: collections.length,
-      collections: collections.map(c => c.name)
+      collections: collections.map((c: { name: string }) => c.name),
+      environment: {
+        hasMongoUri,
+        hasDbName,
+        mongoUriStart: mongoUriStart + '...',
+        dbName: process.env.DB_NAME || 'personal_finance'
+      }
     });
     
   } catch (error) {
@@ -44,8 +58,12 @@ export async function GET() {
       { 
         error: 'Connection test failed',
         details: error instanceof Error ? error.message : 'Unknown error',
-        hasMongoUri: !!process.env.MONGODB_URI,
-        hasDbName: !!process.env.DB_NAME
+        environment: {
+          hasMongoUri: !!process.env.MONGODB_URI,
+          hasDbName: !!process.env.DB_NAME,
+          mongoUriStart: process.env.MONGODB_URI?.substring(0, 20) + '...' || 'Not set',
+          dbName: process.env.DB_NAME || 'personal_finance'
+        }
       },
       { status: 500 }
     );
