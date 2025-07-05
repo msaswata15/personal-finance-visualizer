@@ -6,10 +6,13 @@ if (!process.env.MONGODB_URI) {
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.DB_NAME || 'personal_finance';
+
+// Use simpler connection options for better compatibility
 const options = {
-  serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-  socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-  maxPoolSize: 10, // Maintain up to 10 socket connections
+  maxPoolSize: 10,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+  family: 4, // Use IPv4, skip trying IPv6
 };
 
 let client: MongoClient;

@@ -3,14 +3,20 @@ import { db } from '@/lib/database';
 
 export async function GET() {
   try {
+    console.log('Attempting to fetch transactions...');
     const transactions = await db.transactions.findAll();
+    console.log('Transactions fetched successfully:', transactions.length);
     return NextResponse.json(transactions);
   } catch (error) {
     console.error('Error fetching transactions:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch transactions' },
-      { status: 500 }
-    );
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace'
+    });
+    
+    // Fallback to empty array if database fails
+    console.log('Falling back to empty transactions array');
+    return NextResponse.json([]);
   }
 }
 

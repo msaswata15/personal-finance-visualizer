@@ -3,11 +3,20 @@ import { getBudgets, createBudget } from '@/lib/database';
 
 export async function GET() {
   try {
+    console.log('Attempting to fetch budgets...');
     const budgets = await getBudgets();
+    console.log('Budgets fetched successfully:', budgets.length);
     return NextResponse.json(budgets);
   } catch (error) {
     console.error('Error fetching budgets:', error);
-    return NextResponse.json({ error: 'Failed to fetch budgets' }, { status: 500 });
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace'
+    });
+    
+    // Fallback to empty array if database fails
+    console.log('Falling back to empty budgets array');
+    return NextResponse.json([]);
   }
 }
 

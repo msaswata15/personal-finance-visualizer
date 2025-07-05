@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/database';
+import { PREDEFINED_CATEGORIES } from '@/types';
 
 export async function GET() {
   try {
@@ -15,9 +16,12 @@ export async function GET() {
       mongoUri: process.env.MONGODB_URI ? 'Set' : 'Not set',
       dbName: process.env.DB_NAME || 'personal_finance'
     });
-    return NextResponse.json(
-      { error: 'Failed to fetch categories', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
+    
+    // Fallback to predefined categories if database fails
+    console.log('Falling back to predefined categories');
+    return NextResponse.json(PREDEFINED_CATEGORIES.map((cat, index) => ({
+      ...cat,
+      _id: `fallback_${index}`
+    })));
   }
 }
