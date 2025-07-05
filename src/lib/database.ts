@@ -1,9 +1,9 @@
-import { Collection, ObjectId, WithId } from 'mongodb';
+import { Collection, ObjectId, WithId, Db } from 'mongodb';
 import { getDatabase } from './mongodb';
 import { Transaction, Category, Budget, PREDEFINED_CATEGORIES } from '@/types';
 
 // Cache for database connection
-let cachedDb: any = null;
+let cachedDb: Db | null = null;
 
 async function getDb() {
   if (cachedDb) {
