@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/utils';
 import { 
   Brain, 
   TrendingUp, 
@@ -64,12 +63,6 @@ export function AIFinancialAnalyzer() {
     if (score >= 80) return 'text-green-600';
     if (score >= 60) return 'text-yellow-600';
     return 'text-red-600';
-  };
-
-  const getScoreBackground = (score: number) => {
-    if (score >= 80) return 'bg-green-100';
-    if (score >= 60) return 'bg-yellow-100';
-    return 'bg-red-100';
   };
 
   return (
@@ -156,7 +149,7 @@ export function AIFinancialAnalyzer() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-green-600">
                   <CheckCircle className="h-5 w-5" />
-                  What You're Doing Well
+                  What You&apos;re Doing Well
                 </CardTitle>
               </CardHeader>
               <CardContent>

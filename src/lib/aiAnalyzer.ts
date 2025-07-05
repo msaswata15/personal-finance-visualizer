@@ -18,6 +18,18 @@ export interface FinancialAnalysis {
     }[];
 }
 
+interface FinancialSummary {
+  currentMonthIncome: number;
+  currentMonthExpenses: number;
+  savingsRate: number;
+  totalBudget: number;
+  categoryExpenses: Record<string, number>;
+  budgetVsActual: Array<{ category: string; budgeted: number; spent: number; overBudget: boolean; }>;
+  monthlyTrends: Array<{ month: string; income: number; expenses: number; }>;
+  transactionCount: number;
+  avgTransactionAmount: number;
+}
+
 export class FinancialAIAnalyzer {
     private model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
@@ -41,11 +53,11 @@ export class FinancialAIAnalyzer {
             return this.parseAnalysis(analysisText);
         } catch (error) {
             console.error('AI Analysis Error:', error);
-            return this.getFallbackAnalysis(transactions, budgets);
+            return this.getFallbackAnalysis(transactions);
         }
     }
 
-    private prepareSummary(transactions: Transaction[], budgets: Budget[]) {
+    private prepareSummary(transactions: Transaction[], budgets: Budget[]): FinancialSummary {
         const now = new Date();
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
@@ -54,13 +66,6 @@ export class FinancialAIAnalyzer {
         const currentMonthTransactions = transactions.filter(t => {
             const date = new Date(t.date);
             return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-        });
-
-        // Last 3 months for trend analysis
-        const last3MonthsTransactions = transactions.filter(t => {
-            const date = new Date(t.date);
-            const monthsAgo = (currentYear - date.getFullYear()) * 12 + (currentMonth - date.getMonth());
-            return monthsAgo >= 0 && monthsAgo < 3;
         });
 
         // Calculate metrics
@@ -122,7 +127,7 @@ export class FinancialAIAnalyzer {
         };
     }
 
-    private createAnalysisPrompt(summary: any): string {
+    private createAnalysisPrompt(summary: FinancialSummary): string {
         return `
 You are a professional financial advisor analyzing someone's personal finances. Based on the following financial data, provide a comprehensive analysis in JSON format.
 
@@ -185,7 +190,7 @@ Be encouraging but honest. Provide specific, actionable recommendations.
         }
     }
 
-    private getFallbackAnalysis(transactions: Transaction[], budgets: Budget[]): FinancialAnalysis {
+    private getFallbackAnalysis(transactions: Transaction[]): FinancialAnalysis {
         const currentMonth = new Date().getMonth();
         const currentYear = new Date().getFullYear();
 

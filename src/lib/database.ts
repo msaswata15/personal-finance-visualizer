@@ -118,7 +118,7 @@ export const db = {
         updatedAt: new Date(),
       };
       // Remove _id from updates if present
-      delete (updateData as any)._id;
+      delete (updateData as Record<string, unknown>)._id;
       
       const result = await collection.findOneAndUpdate(
         { _id: new ObjectId(id) },

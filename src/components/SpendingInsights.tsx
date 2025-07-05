@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { Transaction, Budget } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
-import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Calendar, DollarSign } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle, DollarSign } from 'lucide-react';
 
 interface SpendingInsightsProps {
   transactions: Transaction[];
@@ -175,7 +175,7 @@ export function SpendingInsights({ transactions, budgets }: SpendingInsightsProp
         <Card>
           <CardHeader>
             <CardTitle>Budget Status</CardTitle>
-            <CardDescription>How you're doing against your {currentMonthName} budgets</CardDescription>
+            <CardDescription>How you&apos;re doing against your {currentMonthName} budgets</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
