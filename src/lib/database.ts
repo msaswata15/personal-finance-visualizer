@@ -2,6 +2,26 @@ import { Collection, ObjectId, WithId } from 'mongodb';
 import { getDatabase } from './mongodb';
 import { Transaction, Category, Budget, PREDEFINED_CATEGORIES } from '@/types';
 
+// Cache for database connection
+let cachedDb: any = null;
+
+async function getDb() {
+  if (cachedDb) {
+    return cachedDb;
+  }
+  
+  try {
+    console.log('Getting database connection...');
+    cachedDb = await getDatabase();
+    console.log('Database connection established');
+    return cachedDb;
+  } catch (error) {
+    console.error('Failed to get database connection:', error);
+    cachedDb = null; // Reset cache on error
+    throw error;
+  }
+}
+
 // MongoDB document interfaces
 interface TransactionDoc {
   amount: number;
@@ -30,18 +50,18 @@ interface BudgetDoc {
 
 // Database collections
 export async function getTransactionsCollection(): Promise<Collection<TransactionDoc>> {
-  const db = await getDatabase();
-  return db.collection<TransactionDoc>('transactions');
+  const db = await getDb();
+  return db.collection('transactions') as Collection<TransactionDoc>;
 }
 
 export async function getCategoriesCollection(): Promise<Collection<CategoryDoc>> {
-  const db = await getDatabase();
-  return db.collection<CategoryDoc>('categories');
+  const db = await getDb();
+  return db.collection('categories') as Collection<CategoryDoc>;
 }
 
 export async function getBudgetsCollection(): Promise<Collection<BudgetDoc>> {
-  const db = await getDatabase();
-  return db.collection<BudgetDoc>('budgets');
+  const db = await getDb();
+  return db.collection('budgets') as Collection<BudgetDoc>;
 }
 
 // Helper functions to convert between DB documents and app types

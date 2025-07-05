@@ -10,15 +10,13 @@ const dbName = process.env.DB_NAME || 'personal_finance';
 // Don't modify the URI - use it as provided
 const connectionUri = uri;
 
-// Use MongoDB Atlas compatible connection options for serverless environments
+// Optimized connection options for Vercel serverless environment
 const options = {
-  maxPoolSize: 10,
-  serverSelectionTimeoutMS: 5000,
-  socketTimeoutMS: 45000,
-  family: 4, // Use IPv4, skip trying IPv6
-  tls: true, // Enable TLS
-  tlsAllowInvalidCertificates: false,
-  tlsAllowInvalidHostnames: false,
+  maxPoolSize: 1, // Use minimal pool size for serverless
+  serverSelectionTimeoutMS: 10000, // Increased timeout
+  socketTimeoutMS: 0, // No socket timeout (let Vercel handle it)
+  connectTimeoutMS: 10000, // Connection timeout
+  maxIdleTimeMS: 30000, // Close connections after 30 seconds
   retryWrites: true
 };
 
@@ -50,17 +48,27 @@ export default clientPromise;
 export async function getDatabase(): Promise<Db> {
   try {
     console.log('Attempting to connect to MongoDB...');
+    console.log('Environment:', process.env.NODE_ENV);
+    console.log('MongoDB URI exists:', !!process.env.MONGODB_URI);
+    
     const client = await clientPromise;
     console.log('MongoDB client connected successfully');
+    
     const db = client.db(dbName);
     console.log('Database selected:', dbName);
+    
+    // Test the connection with a simple operation
+    await db.admin().ping();
+    console.log('MongoDB ping successful');
+    
     return db;
   } catch (error) {
     console.error('MongoDB connection error:', error);
     console.error('Connection details:', {
       uri: process.env.MONGODB_URI ? 'Set' : 'Not set',
       dbName: dbName,
-      nodeEnv: process.env.NODE_ENV
+      nodeEnv: process.env.NODE_ENV,
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
     throw error;
   }

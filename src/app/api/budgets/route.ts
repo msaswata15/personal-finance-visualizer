@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBudgets, createBudget } from '@/lib/database';
+import { db } from '@/lib/database';
 
 export async function GET() {
   try {
     console.log('Attempting to fetch budgets...');
-    const budgets = await getBudgets();
+    const budgets = await db.budgets.findAll();
     console.log('Budgets fetched successfully:', budgets.length);
     return NextResponse.json(budgets);
   } catch (error) {
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const budget = await createBudget({
+    const budget = await db.budgets.create({
       category,
       amount: parseFloat(amount),
       month,

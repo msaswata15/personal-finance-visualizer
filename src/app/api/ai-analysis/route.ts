@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import { FinancialAIAnalyzer } from '@/lib/aiAnalyzer';
-import { getAllTransactions, getBudgets } from '@/lib/database';
+import { db } from '@/lib/database';
 
 export async function POST() {
   try {
     // Get all transactions and budgets
     const [transactions, budgets] = await Promise.all([
-      getAllTransactions(),
-      getBudgets()
+      db.transactions.findAll(),
+      db.budgets.findAll()
     ]);
 
     // Initialize AI analyzer
