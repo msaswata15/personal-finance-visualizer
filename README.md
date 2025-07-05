@@ -1,6 +1,6 @@
 # Personal Finance Visualizer 💰
 
-A comprehensive personal finance management web application built with Next.js, React, and modern web technologies. Track transactions, manage budgets, visualize spending patterns, and get AI-powered financial insights.
+A comprehensive personal finance management web application built with Next.js, React, and modern web technologies. Track transactions, manage budgets, visualize spending patterns, and get AI-powered financial insights
 
 ![Personal Finance Visualizer](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
 ![React](https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react)
