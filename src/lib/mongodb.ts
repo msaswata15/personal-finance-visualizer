@@ -7,17 +7,14 @@ if (!process.env.MONGODB_URI) {
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.DB_NAME || 'personal_finance';
 
-// Don't modify the URI - use it as provided
-const connectionUri = uri;
-
 // Optimized connection options for Vercel serverless environment
 const options = {
   maxPoolSize: 1, // Use minimal pool size for serverless
-  serverSelectionTimeoutMS: 10000, // Increased timeout
-  socketTimeoutMS: 0, // No socket timeout (let Vercel handle it)
-  connectTimeoutMS: 10000, // Connection timeout
+  serverSelectionTimeoutMS: 5000, // Reduced timeout for faster failures
+  socketTimeoutMS: 45000, // 45 second socket timeout
+  connectTimeoutMS: 10000, // 10 second connection timeout
   maxIdleTimeMS: 30000, // Close connections after 30 seconds
-  retryWrites: true
+  retryWrites: true,
 };
 
 let client: MongoClient;
@@ -31,13 +28,13 @@ if (process.env.NODE_ENV === 'development') {
   };
 
   if (!globalWithMongo._mongoClientPromise) {
-    client = new MongoClient(connectionUri, options);
+    client = new MongoClient(uri, options);
     globalWithMongo._mongoClientPromise = client.connect();
   }
   clientPromise = globalWithMongo._mongoClientPromise;
 } else {
   // In production mode, it's best to not use a global variable.
-  client = new MongoClient(connectionUri, options);
+  client = new MongoClient(uri, options);
   clientPromise = client.connect();
 }
 
@@ -50,6 +47,7 @@ export async function getDatabase(): Promise<Db> {
     console.log('Attempting to connect to MongoDB...');
     console.log('Environment:', process.env.NODE_ENV);
     console.log('MongoDB URI exists:', !!process.env.MONGODB_URI);
+    console.log('DB Name:', dbName);
     
     const client = await clientPromise;
     console.log('MongoDB client connected successfully');
@@ -66,9 +64,12 @@ export async function getDatabase(): Promise<Db> {
     console.error('MongoDB connection error:', error);
     console.error('Connection details:', {
       uri: process.env.MONGODB_URI ? 'Set' : 'Not set',
+      uriLength: process.env.MONGODB_URI?.length || 0,
       dbName: dbName,
       nodeEnv: process.env.NODE_ENV,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
+      errorName: error instanceof Error ? error.name : 'Unknown',
+      errorStack: error instanceof Error ? error.stack : 'No stack'
     });
     throw error;
   }
