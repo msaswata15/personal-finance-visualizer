@@ -7,17 +7,19 @@ if (!process.env.MONGODB_URI) {
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.DB_NAME || 'personal_finance';
 
-// Add the database name to the URI if it's not already there
-const uriWithDb = uri.includes('mongodb.net/') && !uri.includes('mongodb.net/' + dbName) 
-  ? uri.replace('mongodb.net/', `mongodb.net/${dbName}`)
-  : uri;
+// Don't modify the URI - use it as provided
+const connectionUri = uri;
 
-// Use simpler connection options for better compatibility
+// Use MongoDB Atlas compatible connection options for serverless environments
 const options = {
   maxPoolSize: 10,
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
   family: 4, // Use IPv4, skip trying IPv6
+  tls: true, // Enable TLS
+  tlsAllowInvalidCertificates: false,
+  tlsAllowInvalidHostnames: false,
+  retryWrites: true
 };
 
 let client: MongoClient;
@@ -31,13 +33,13 @@ if (process.env.NODE_ENV === 'development') {
   };
 
   if (!globalWithMongo._mongoClientPromise) {
-    client = new MongoClient(uriWithDb, options);
+    client = new MongoClient(connectionUri, options);
     globalWithMongo._mongoClientPromise = client.connect();
   }
   clientPromise = globalWithMongo._mongoClientPromise;
 } else {
   // In production mode, it's best to not use a global variable.
-  client = new MongoClient(uriWithDb, options);
+  client = new MongoClient(connectionUri, options);
   clientPromise = client.connect();
 }
 
