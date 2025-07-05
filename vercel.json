@@ -6,8 +6,8 @@
   },
   "regions": ["iad1"],
   "env": {
-    "MONGODB_URI": "@mongodb-uri",
-    "DB_NAME": "@db-name",
-    "GEMINI_API_KEY": "@gemini-api-key"
+    "MONGODB_URI": "mongodb+srv://saswatagdsc:BgqUKnm4UOFW7Xkp@cluster0.y9x7tjb.mongodb.net/personal_finance?retryWrites=true&w=majority&appName=Cluster0",
+    "DB_NAME": "personal_finance",
+    "GEMINI_API_KEY": "AIzaSyCjIiM2K4C0YeErNo1L-ET_GWnv39NFc7I"
   }
 }
