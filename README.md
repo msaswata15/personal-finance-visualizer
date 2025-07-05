@@ -7,6 +7,10 @@ A comprehensive personal finance management web application built with Next.js, 
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)
 ![MongoDB](https://img.shields.io/badge/MongoDB-7-green?style=for-the-badge&logo=mongodb)
 
+![image](https://github.com/user-attachments/assets/19a8aed8-3727-4865-9c24-07ac02e37a46)
+![image](https://github.com/user-attachments/assets/94c532af-4374-4dac-bee1-bbe2ccbd41ee)
+
+
 ## 🌟 Features
 
 ### 📊 Stage 1: Transaction Management ✅
